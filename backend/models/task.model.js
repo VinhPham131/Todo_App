@@ -4,7 +4,6 @@ const taskSchema = new mongoose.Schema({
     assignee: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: [true, 'Assignee is required']
     },
     title: {
         type: String,

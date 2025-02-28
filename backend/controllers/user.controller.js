@@ -105,16 +105,9 @@ exports.updateUser = async (req, res) => {
             }
         }
 
-        const originalUser = await User.findById(req.params.id);
-
         const user = await User.findByIdAndUpdate(req.params.id, req.body,
             { new: true}
         );
-
-        if (JSON.stringify(originalUser) === JSON.stringify(user)) {
-            return res.status(400)
-                .send({ message: 'There are no changes' });
-        }
         res.status(200).send(user);
     }
     catch (error) {
