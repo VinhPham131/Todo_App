@@ -83,7 +83,7 @@ export default function Modal({ isOpen, onClose, onSubmit, userData, title, butt
                     </div>
                     <p className="text-red-500 mt-4">{error}</p>
                     <div className="flex justify-end mt-4">
-                        <Button type="submit" gradientMonochrome="pink" disabled={!isDirty}>{buttonLabel}</Button>
+                        <Button type="submit" gradientDuoTone="purpleToPink" disabled={!isDirty}>{buttonLabel}</Button>
                     </div>
                 </form>
             </FlowbiteModal.Body>

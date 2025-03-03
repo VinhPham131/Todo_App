@@ -8,7 +8,6 @@ import PopUpConfirmation from "../components/pop-up-comfirmation";
 import SuccessToast from "../components/success-toast";
 import FailToast from "../components/fail-toast";
 import SideBar from "../components/side-bar";
-import { set } from "lodash";
 
 
 export default function UserManagement() {
@@ -187,7 +186,7 @@ export default function UserManagement() {
         </div>
         <div className="bg-black p-6 mx-auto mt-10 rounded-lg w-[1200px]">
           <div className="flex justify-end gap-10">
-            <Button gradientMonochrome="pink" onClick={() => openCreateModal(users)}>Create a new user</Button>
+            <Button gradientDuoTone="purpleToPink" onClick={() => openCreateModal(users)}>Create a new user</Button>
             <div className="max-w-lg">
               <TextInput
                 id="search"
@@ -234,13 +233,13 @@ export default function UserManagement() {
                           e.preventDefault();
                           openEditModal(user);
                         }}
-                          className="text-pink-500 cursor-pointer">
+                          className="text-yellow-500 cursor-pointer">
                           <HiPencilAlt />
                         </a>
                         <a onClick={(e) => {
                           e.preventDefault();
                           comfirmDelete(user._id);
-                        }} className="text-pink-500 cursor-pointer">
+                        }} className="text-red-600 cursor-pointer">
                           <HiTrash />
                         </a>
                       </Table.Cell>
@@ -251,7 +250,7 @@ export default function UserManagement() {
             </Table>
           </div>
           <div className="flex overflow-x-auto sm:justify-center">
-            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} className="mt-4" />
+            <Pagination  currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} className="mt-4" />
           </div>
         </div>
         <Modal

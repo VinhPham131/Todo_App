@@ -1,4 +1,4 @@
-import React, { use } from "react";
+import React from "react";
 import { Sidebar } from "flowbite-react";
 import { HiHome, HiUsers } from "react-icons/hi";
 import { useLocation } from "react-router-dom";

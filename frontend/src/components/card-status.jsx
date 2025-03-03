@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, Modal, TextInput, Label, Dropdown, Textarea } from "flowbite-react";
-import { HiPlus, HiUser, HiTrash, HiSearch } from "react-icons/hi";
+import { HiPlus, HiUser } from "react-icons/hi";
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import PopUpConfirmation from "./pop-up-comfirmation";
 import SuccessToast from "./success-toast";
+
+import { useDroppable } from "@dnd-kit/core";
+import Task from "./task";
 
 export default function CardStatus({ status, tasks, updateTasks }) {
 
@@ -36,6 +39,9 @@ export default function CardStatus({ status, tasks, updateTasks }) {
     const [successMessage, setSuccessMessage] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
 
+    const { setNodeRef } = useDroppable({
+        id: status._id,
+    });
 
 
     const {
@@ -178,106 +184,94 @@ export default function CardStatus({ status, tasks, updateTasks }) {
             <div className="fixed top-4 right-4 z-50">
                 {successMessage && <SuccessToast message={successMessage} />}
             </div>
-            <Card className="w-[350px] max-h-screen min-h-32  text-center bg-black">
+            <Card className="w-[350px] max-h-screen min-h-32  text-center bg-black" >
                 <div className="flex justify-center items-center">
                     <h1 className="text-[20px] text-white">{status.name}</h1>
                 </div>
-                <div className="flex flex-col gap-3 overflow-auto max-h-[650px]">
-                    {Array.isArray(tasks) && tasks.map((task) => (
-                        <div key={task._id} className=" p-3 rounded-md bg-gray-700 cursor-pointer" onClick={() => openModal(task)}>
-                            <div className="flex items-center gap-5 justify-between">
-                                <h1 className="text-white text-start text-[17px] w-[250px] overflow-hidden">{task.title}</h1>
-                                <HiTrash className="align-middle text-white cursor-pointer" onClick={(e) => { e.stopPropagation(); comfirmDelete(task._id); }} />
-                            </div>
-                            <div className="flex items-center">
-                                <HiUser className="mr-2 size-3" />
-                                <h1 className="text-gray-500 text-[14px] text-ellipsis overflow-hidden whitespace-nowrap">
-                                    {users.find(user => user._id === task.assignee)?.username || "Unassigned"}
-                                </h1>
-                            </div>
-                        </div>
+                <div className="flex flex-col gap-3 overflow-auto max-h-[650px]" ref={setNodeRef}>
+                    {tasks.map((task) => (
+                        <Task key={task._id} task={task} users={users} openModal={openModal} comfirmDelete={comfirmDelete} />
                     ))}
                 </div>
                 <Button outline gradientDuoTone="purpleToPink" onClick={() => openModal()}>
                     <HiPlus className="mr-2 mt-[3px]" />
                     Add a task
                 </Button>
-
-                <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                    <Modal.Header>{currentTask ? "Update" : 'Add a new task'}</Modal.Header>
-                    <Modal.Body>
-                        <form onSubmit={handleSubmit(handleAddOrUpdateTask)} className="space-y-4">
-                            <div>
-                                <Label className="text-black">Task title</Label>
-                                <TextInput {...register("title")} placeholder="Title" />
-                                {errors.title && <p className="text-red-500">{errors.title.message}</p>}
-                            </div>
-                            <div>
-                                <Label className="text-black">Description</Label>
-                                <Textarea {...register("description")} placeholder="Task description" rows={4} />
-                                {errors.description && <p className="text-red-500">{errors.description.message}</p>}
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <div>
-                                    <Label className="text-black">Assignee</Label>
-                                    <Dropdown
-                                        label={users.find(user => user._id === watch("assignee"))?.username || "Select Assignee"}
-                                        size="sm"
-                                        className="relative w-[150px]"
-                                    >
-                                        <div className="max-h-[200px] overflow-auto">
-                                            {users.length === 0 ? (
-                                                <Dropdown.Item>No users found</Dropdown.Item>
-                                            ) : (
-                                                users.map(user => (
-                                                    <Dropdown.Item
-                                                        key={user._id}
-                                                        onClick={() => {
-                                                            setValue("assignee", user._id, { shouldDirty: true });
-                                                            setSearchTerm("");
-                                                        }}
-
-                                                    >
-                                                        <div className="flex items-center">
-                                                            <HiUser className="mr-2" />
-                                                            {user.username}
-                                                        </div>
-                                                    </Dropdown.Item>
-                                                ))
-                                            )}
-                                        </div>
-                                    </Dropdown>
-                                    {errors.assignee && <p className="text-red-500">{errors.assignee.message}</p>}
-                                </div>
-                                <div>
-                                    <Label className="text-black">Status</Label>
-                                    <Dropdown label={statuses.find(status => status._id === watch("status"))?.name || "Select Status"} size="sm">
-                                        {Array.isArray(statuses) && statuses.map(status => (
-                                            <Dropdown.Item key={status._id} onClick={() => setValue("status", status._id, { shouldDirty: true })}>
-                                                {status.name}
-                                            </Dropdown.Item>
-                                        ))}
-                                    </Dropdown>
-                                </div>
-                                <p className="text-red-500 mt-4">{failMessage}</p>
-                                <div>
-                                    <div className="flex justify-end mt-4 gap-5 border-t pt-4">
-                                        <Button type="submit" gradientDuoTone="purpleToPink" disabled={!isDirty}>{currentTask ? 'Update Task' : 'Add Task'}</Button>
-                                        <Button onClick={() => setIsModalOpen(false)} color="gray">Cancel</Button>                                </div>
-                                </div>
-                            </div>
-
-                        </form>
-                    </Modal.Body>
-                </Modal>
-                {isConfirmationOpen && (
-                    <PopUpConfirmation
-                        onConfirm={handleDeleteTask}
-                        onCancel={() => setIsConfirmationOpen(false)}
-                        title="task"
-                    />
-                )}
             </Card>
+            <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <Modal.Header>{currentTask ? "Update" : 'Add a new task'}</Modal.Header>
+                <Modal.Body>
+                    <form onSubmit={handleSubmit(handleAddOrUpdateTask)} className="space-y-4">
+                        <div>
+                            <Label className="text-black">Task title</Label>
+                            <TextInput {...register("title")} placeholder="Title" />
+                            {errors.title && <p className="text-red-500">{errors.title.message}</p>}
+                        </div>
+                        <div>
+                            <Label className="text-black">Description</Label>
+                            <Textarea {...register("description")} placeholder="Task description" rows={4} />
+                            {errors.description && <p className="text-red-500">{errors.description.message}</p>}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <div>
+                                <Label className="text-black">Assignee</Label>
+                                <Dropdown
+                                    label={users.find(user => user._id === watch("assignee"))?.username || "Select Assignee"}
+                                    size="sm"
+                                    className="relative w-[200px]"
+                                >
+                                    <div className="max-h-[200px] overflow-auto">
+                                        {users.length === 0 ? (
+                                            <Dropdown.Item>No users found</Dropdown.Item>
+                                        ) : (
+                                            users.map(user => (
+                                                <Dropdown.Item
+                                                    key={user._id}
+                                                    onClick={() => {
+                                                        setValue("assignee", user._id, { shouldDirty: true });
+                                                        setSearchTerm("");
+                                                    }}
+
+                                                >
+                                                    <div className="flex items-center max-w-[200px] overflow-hidden whitespace-nowrap">
+                                                        <HiUser className="mr-2" />
+                                                        {user.username}
+                                                    </div>
+                                                </Dropdown.Item>
+                                            ))
+                                        )}
+                                    </div>
+                                </Dropdown>
+                                {errors.assignee && <p className="text-red-500">{errors.assignee.message}</p>}
+                            </div>
+                            <div>
+                                <Label className="text-black">Status</Label>
+                                <Dropdown label={statuses.find(status => status._id === watch("status"))?.name || "Select Status"} size="sm">
+                                    {Array.isArray(statuses) && statuses.map(status => (
+                                        <Dropdown.Item key={status._id} onClick={() => setValue("status", status._id, { shouldDirty: true })}>
+                                            {status.name}
+                                        </Dropdown.Item>
+                                    ))}
+                                </Dropdown>
+                            </div>
+                            <p className="text-red-500 mt-4">{failMessage}</p>
+                            <div>
+                                <div className="flex justify-end mt-4 gap-5 border-t pt-4">
+                                    <Button type="submit" gradientDuoTone="purpleToPink" disabled={!isDirty}>{currentTask ? 'Update Task' : 'Add Task'}</Button>
+                                    <Button onClick={() => setIsModalOpen(false)} color="gray">Cancel</Button>                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </Modal.Body>
+            </Modal>
+            {isConfirmationOpen && (
+                <PopUpConfirmation
+                    onConfirm={handleDeleteTask}
+                    onCancel={() => setIsConfirmationOpen(false)}
+                    title="task"
+                />
+            )}
         </div>
     );
 }
