@@ -101,13 +101,12 @@ export default function Home() {
         if (!draggedTask || !overContainer) return;
 
         const newStatus = typeof overContainer === "string" ? overContainer : overContainer._id;
-
-        if (draggedTask.assignee === null) {
-            setFailMessage("Task must be assigned to a user");
-            console.log(failMessage);
-            return;
-        }
         if (draggedTask.status !== newStatus) {
+            if (draggedTask.assignee === null) {
+                setFailMessage("Task must be assigned to a user");
+                console.log(failMessage);
+                return;
+            }
             setTasks(tasks.map(task =>
                 task._id === active.id ? { ...task, status: newStatus } : task
             ));
@@ -117,7 +116,7 @@ export default function Home() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: newStatus })
                 });
-                if(result.ok) {
+                if (result.ok) {
                     setSuccessMessage("Task updated successfully");
                 }
             } catch (error) {
@@ -136,8 +135,8 @@ export default function Home() {
     return (
         <div className='bg-theme h-screen flex'>
             <div className="fixed top-4 right-4 z-50 flex flex-col gap-4">
-                {failMessage && <FailToast message={failMessage}/>}
-                {successMessage && <SuccessToast message={successMessage}/>}
+                {failMessage && <FailToast message={failMessage} />}
+                {successMessage && <SuccessToast message={successMessage} />}
             </div>
             <div>
                 <SideBar className="bg-gray-500" />
